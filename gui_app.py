@@ -58,7 +58,7 @@ class SecurityMonitor:
         try:
             # Create a copy to avoid modifying the original
             image_copy = image.copy()
-            
+
             # Add text label if provided
             if label_text:
                 # Add text overlay to image
@@ -66,19 +66,27 @@ class SecurityMonitor:
                 font_scale = 1.0
                 color = (0, 255, 0)  # Green color in BGR
                 thickness = 2
-                
+
                 # Get text size to position it properly
                 text_size = cv2.getTextSize(label_text, font, font_scale, thickness)[0]
-                
+
                 # Position text at top-left with some padding
                 x = 10
                 y = 30
-                
+
                 # Add a background rectangle for better visibility
-                cv2.rectangle(image_copy, (x-5, y-25), (x + text_size[0] + 5, y + 5), (0, 0, 0), -1)
-                
+                cv2.rectangle(
+                    image_copy,
+                    (x - 5, y - 25),
+                    (x + text_size[0] + 5, y + 5),
+                    (0, 0, 0),
+                    -1,
+                )
+
                 # Add the text
-                cv2.putText(image_copy, label_text, (x, y), font, font_scale, color, thickness)
+                cv2.putText(
+                    image_copy, label_text, (x, y), font, font_scale, color, thickness
+                )
 
             # Convert BGR to RGB if needed
             if len(image_copy.shape) == 3 and image_copy.shape[2] == 3:
@@ -156,7 +164,9 @@ class SecurityMonitor:
                 }
 
             # Encode both images with clear labels
-            owner_b64 = self.encode_image(self.owner_image, "REFERENCE IMAGE - NORMAL WORKING DISTANCE")
+            owner_b64 = self.encode_image(
+                self.owner_image, "REFERENCE IMAGE - NORMAL WORKING DISTANCE"
+            )
             current_b64 = self.encode_image(current_image, "CURRENT MONITORING IMAGE")
 
             if not owner_b64 or not current_b64:
@@ -216,17 +226,11 @@ SECURITY ALERT CONDITIONS:
 - Person at FURTHER distance than reference image with no threatening behavior
 - Person well beyond the reference working distance
 
-RESPONSE FORMAT:
+RESPONSE FORMAT (KEEP IT BRIEF):
 THREAT LEVEL: [0-100]%
-[Analysis result below]
+STATUS: [Choose one: "🚨 HIGH ALERT" / "⚠️ CAUTION" / "✅ NORMAL"]
 
-For HIGH threat (70-100%): "🚨 SECURITY ALERT: [Describe the specific threat - camera issue, unauthorized access, suspicious approach, etc.]"
-
-For MODERATE threat (30-69%): "⚠️ CAUTION: [Describe the situation and specific concerns]"
-
-For LOW threat (0-29%): "✅ ALL NORMAL: [Describe what you see and why it's safe]"
-
-IMPORTANT: Always compare the distance/positioning in the second image to the reference distance shown in the first image. The first image establishes what "normal computer use distance" looks like.
+IMPORTANT: Just provide the threat level number and status. No detailed analysis needed.
 
 Analyze the images now:""",
                 },
@@ -244,7 +248,7 @@ Analyze the images now:""",
             response = self.client.chat.completions.create(
                 model="glm-4v-flash",
                 messages=[{"role": "user", "content": message_content}],
-                extra_body={"temperature": 0.3, "max_tokens": 1000},
+                extra_body={"temperature": 0.1, "max_tokens": 100},
             )
 
             # Parse response
