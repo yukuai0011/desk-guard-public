@@ -150,36 +150,54 @@ class SecurityMonitor:
                     "type": "text",
                     "text": """You are a computer security monitoring system. I have uploaded 2 images:
 
-1. FIRST IMAGE: This is the authorized owner of the computer (reference image)
-2. SECOND IMAGE: This is the current person near the computer (monitoring image)
+1. FIRST IMAGE: This is the authorized owner of the computer (reference image) - this shows the NORMAL, SAFE distance and position
+2. SECOND IMAGE: This is the current monitoring image from the camera
 
 Your task:
-- Compare the person in the second image with the owner in the first image
-- Identify them by BOTH facial features AND clothing/appearance
-- Determine if the person in the second image is the same as the owner OR a different person
+1. FIRST - Check if the second image is mostly black, very dark, or shows camera malfunction/obstruction
+2. THEN - Compare any person in the second image with the owner in the first image
+3. ASSESS DISTANCE - Use the first image as reference for what "normal safe distance" looks like when someone is using the computer
+
+CRITICAL SECURITY CHECKS:
+🔍 CAMERA STATUS: If the second image is mostly black/dark/obstructed/malfunctioning
+🔍 PERSON IDENTIFICATION: Compare faces and overall appearance between images  
+🔍 DISTANCE ASSESSMENT: Compare the person's distance to computer with the reference image
+🔍 SUSPICIOUS BEHAVIOR: Look for hands reaching toward computer/keyboard/mouse
+
+DISTANCE EVALUATION:
+- Use the FIRST image as baseline for "normal working distance"
+- If person in second image is MUCH CLOSER than the reference = HIGH THREAT
+- If person in second image is at SIMILAR distance as reference = evaluate based on identity
+- If person in second image is FARTHER away than reference = LOWER THREAT
 
 SECURITY ALERT CONDITIONS:
-- If the person in the second image is NOT the owner (different face or different clothing)
-- AND they are approaching the computer too closely by either:
-  * Having their hand reaching toward the computer/keyboard/mouse
-  * Putting their face very close to the screen (closer than normal viewing distance)
+🚨 HIGH THREAT (70-100%):
+- Camera is blacked out/obstructed/malfunctioned
+- Unauthorized person at same or closer distance than reference image
+- Anyone reaching toward computer/keyboard/mouse
+- Unauthorized person's face much closer to screen than reference shows
+
+⚠️ MODERATE THREAT (30-69%):
+- Unauthorized person present but at farther distance than reference
+- Unclear if same person as owner due to lighting/angle changes
+- Person approaching but not yet at reference distance
+
+✅ LOW THREAT (0-29%):
+- Same person as owner at normal distance (similar to reference)
+- Unauthorized person at much farther distance than reference
+- No person visible but camera working normally
 
 RESPONSE FORMAT:
-You must provide a threat possibility rate and analysis in this exact format:
-
 THREAT LEVEL: [0-100]%
 [Analysis result below]
 
-If threat detected (70-100%): "🚨 SECURITY ALERT: Unauthorized person detected approaching computer. [Describe what you see and why it's suspicious]"
+For HIGH threat (70-100%): "🚨 SECURITY ALERT: [Describe the specific threat - camera issue, unauthorized access, suspicious approach, etc.]"
 
-If moderate concern (30-69%): "⚠️ CAUTION: [Describe the situation and why there might be some concern]"
+For MODERATE threat (30-69%): "⚠️ CAUTION: [Describe the situation and specific concerns]"
 
-If all normal (0-29%): "✅ ALL NORMAL: [Briefly describe the situation - either owner at computer or no security threat detected]"
+For LOW threat (0-29%): "✅ ALL NORMAL: [Describe what you see and why it's safe]"
 
-SCORING GUIDELINES:
-- 0-29%: Owner present OR unauthorized person at safe distance
-- 30-69%: Unauthorized person present but not immediately threatening
-- 70-100%: Unauthorized person approaching computer/reaching for it/face too close
+IMPORTANT: Always compare the distance/positioning in the second image to the reference distance shown in the first image. The first image establishes what "normal computer use distance" looks like.
 
 Analyze the images now:""",
                 },
@@ -524,8 +542,8 @@ def create_gui():
             else frame,
             inputs=[camera_feed],
             outputs=[camera_feed],
-            # time_limit=300,  # 5 minutes limit
-            stream_every=0.5,  # Update every 0.5 seconds
+            # time_limit=60,  # 1 minute limit
+            stream_every=1,  # Update every 1 second
             concurrency_limit=10,
         )
 
