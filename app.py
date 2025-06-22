@@ -14,23 +14,25 @@ from typing import Dict, List, Any
 try:
     from zhipuai import ZhipuAI
 except ImportError:
-    print("Error: zhipuai package not found. Please install it using: pip install zhipuai")
+    print(
+        "Error: zhipuai package not found. Please install it using: pip install zhipuai"
+    )
     exit(1)
 
 
 def encode_image(image_path: str) -> str | None:
     """
     Encode an image file to base64 string.
-    
+
     Args:
         image_path: Path to the image file
-        
+
     Returns:
         Base64 encoded string of the image, or None if failed
     """
     try:
         with open(image_path, "rb") as image_file:
-            return base64.b64encode(image_file.read()).decode('utf-8')
+            return base64.b64encode(image_file.read()).decode("utf-8")
     except FileNotFoundError:
         print(f"Error: Image file not found at {image_path}")
         return None
@@ -50,7 +52,7 @@ def test_security_monitoring():
     if not api_key:
         print("Error: API key is required")
         return
-    
+
     # Initialize the client
     try:
         client = ZhipuAI(api_key=api_key)
@@ -58,13 +60,10 @@ def test_security_monitoring():
     except Exception as e:
         print(f"Error initializing client: {e}")
         return
-    
+
     # Test image paths
-    image_paths = [
-        r"image1",
-        r"image2"
-    ]
-    
+    image_paths = [r"image1", r"image2"]
+
     # Check if images exist
     existing_images = []
     for image_path in image_paths:
@@ -73,17 +72,21 @@ def test_security_monitoring():
             print(f"✓ Found image: {Path(image_path).name}")
         else:
             print(f"✗ Image not found: {image_path}")
-    
+
     if not existing_images:
-        print("Error: No images found for security monitoring. Please ensure both owner and monitoring images exist.")
+        print(
+            "Error: No images found for security monitoring. Please ensure both owner and monitoring images exist."
+        )
         return
-    
+
     if len(existing_images) < 2:
-        print("Warning: Only one image found. Security monitoring requires both owner and current user images.")
+        print(
+            "Warning: Only one image found. Security monitoring requires both owner and current user images."
+        )
         print("Proceeding with available image(s)...")
-    
+
     print(f"\nProcessing {len(existing_images)} image(s) for security analysis...")
-    
+
     # Encode images to base64
     encoded_images = []
     for i, image_path in enumerate(existing_images):
@@ -95,16 +98,16 @@ def test_security_monitoring():
                 "path": image_path,
                 "name": Path(image_path).name,
                 "base64": encoded_image,
-                "type": image_type
+                "type": image_type,
             })
             print(f"✓ Successfully encoded {image_type}: {Path(image_path).name}")
         else:
             print(f"✗ Failed to encode {image_type}: {Path(image_path).name}")
-    
+
     if not encoded_images:
         print("Error: No images could be encoded for security monitoring")
         return
-    
+
     # Prepare message content with multiple images for security monitoring
     message_content = [
         {
@@ -142,52 +145,45 @@ SCORING GUIDELINES:
 - 30-69%: Unauthorized person present but not immediately threatening
 - 70-100%: Unauthorized person approaching computer/reaching for it/face too close
 
-Analyze the images now:"""
+Analyze the images now:""",
         }
     ]
-    
+
     # Add each encoded image to the message
     for img_data in encoded_images:
         message_content.append({
             "type": "image_url",
-            "image_url": {
-                "url": f"data:image/jpeg;base64,{img_data['base64']}"
-            }
+            "image_url": {"url": f"data:image/jpeg;base64,{img_data['base64']}"},
         })
         print(f"✓ Added {img_data['type']}: {img_data['name']} to analysis")
-    
+
     print(f"\n🔍 Analyzing {len(encoded_images)} image(s) for security threats...")
-    
+
     try:
         # Make the API call
         response = client.chat.completions.create(
             model="glm-4v-flash",
-            messages=[
-                {
-                    "role": "user",
-                    "content": message_content
-                }
-            ],
+            messages=[{"role": "user", "content": message_content}],
             extra_body={
                 "temperature": 0.3,  # Lower temperature for more consistent security analysis
-                "max_tokens": 1000
-            }
+                "max_tokens": 1000,
+            },
         )
-        
+
         print("✓ Security analysis completed")
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🛡️  SECURITY MONITORING RESULT:")
-        print("="*60)
+        print("=" * 60)
         print(response.choices[0].message.content)
-        print("="*60)
-        
+        print("=" * 60)
+
         # Display usage information if available
-        if hasattr(response, 'usage'):
+        if hasattr(response, "usage"):
             print(f"\nUsage Information:")
             print(f"Prompt tokens: {response.usage.prompt_tokens}")
             print(f"Completion tokens: {response.usage.completion_tokens}")
             print(f"Total tokens: {response.usage.total_tokens}")
-            
+
     except Exception as e:
         print(f"⚠️  Error during security analysis: {e}")
         print("Please check your API key and network connection.")
@@ -203,7 +199,7 @@ def test_single_image_upload():
     if not api_key:
         print("Error: API key is required")
         return
-    
+
     # Initialize the client
     try:
         client = ZhipuAI(api_key=api_key)
@@ -211,31 +207,31 @@ def test_single_image_upload():
     except Exception as e:
         print(f"Error initializing client: {e}")
         return
-    
+
     # Test with the first available image
     image_paths = [
         r"C:\Users\yukua\Downloads\WIN_20250622_14_28_40_Pro.jpg",
-        r"C:\Users\yukua\Downloads\WIN_20250622_15_21_38_Pro.jpg"
+        r"C:\Users\yukua\Downloads\WIN_20250622_15_21_38_Pro.jpg",
     ]
-    
+
     test_image = None
     for image_path in image_paths:
         if os.path.exists(image_path):
             test_image = image_path
             break
-    
+
     if not test_image:
         print("Error: No test images found")
         return
-    
+
     print(f"Testing with single image: {Path(test_image).name}")
-    
+
     # Encode the image
     encoded_image = encode_image(test_image)
     if not encoded_image:
         print("Error: Failed to encode image")
         return
-    
+
     try:
         # Make the API call with single image
         response = client.chat.completions.create(
@@ -246,30 +242,27 @@ def test_single_image_upload():
                     "content": [
                         {
                             "type": "text",
-                            "text": "Please analyze this image and describe what you see in detail."
+                            "text": "Please analyze this image and describe what you see in detail.",
                         },
                         {
                             "type": "image_url",
                             "image_url": {
                                 "url": f"data:image/jpeg;base64,{encoded_image}"
-                            }
-                        }
-                    ]
+                            },
+                        },
+                    ],
                 }
             ],
-            extra_body={
-                "temperature": 0.7,
-                "max_tokens": 500
-            }
+            extra_body={"temperature": 0.7, "max_tokens": 500},
         )
-        
+
         print("✓ Successfully received response from GLM-4V")
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("GLM-4V RESPONSE (Single Image):")
-        print("="*60)
+        print("=" * 60)
         print(response.choices[0].message.content)
-        print("="*60)
-        
+        print("=" * 60)
+
     except Exception as e:
         print(f"Error calling GLM-4V API: {e}")
 
@@ -281,18 +274,20 @@ def main():
     print("🛡️  Computer Security Monitoring System")
     print("=====================================")
     print("This system monitors computer access using GLM-4V vision analysis.")
-    print("It compares authorized users with current users to detect unauthorized access.")
+    print(
+        "It compares authorized users with current users to detect unauthorized access."
+    )
     print("Make sure you have a valid API key from https://open.bigmodel.cn/")
     print()
-    
+
     while True:
         print("Choose monitoring mode:")
         print("1. 🔍 Security monitoring (compare owner vs current user)")
         print("2. 📷 Single image analysis")
         print("3. ❌ Exit")
-        
+
         choice = input("\nEnter your choice (1-3): ").strip()
-        
+
         if choice == "1":
             print("\n--- 🛡️  Security Monitoring Mode ---")
             test_security_monitoring()
@@ -304,8 +299,8 @@ def main():
             break
         else:
             print("Invalid choice. Please enter 1, 2, or 3.")
-        
-        print("\n" + "-"*60 + "\n")
+
+        print("\n" + "-" * 60 + "\n")
 
 
 if __name__ == "__main__":
