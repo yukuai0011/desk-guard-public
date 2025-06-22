@@ -7,17 +7,18 @@ Features camera integration, concurrent API processing, and live threat assessme
 """
 
 import base64
-import time
-import threading
-import queue
-from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Optional, Dict, List, Tuple, Any
 import json
+import queue
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
-import gradio as gr
 import cv2
+import gradio as gr
 import numpy as np
+import requests
 from PIL import Image
 
 try:
@@ -41,6 +42,7 @@ class SecurityMonitor:
         self.executor: Optional[ThreadPoolExecutor] = None
         self.active_requests = set()
         self.camera = None
+        self.discord_webhook_url: Optional[str] = None
 
     def initialize_client(self, api_key: str) -> str:
         """Initialize the GLM-4V client with API key."""
@@ -356,6 +358,11 @@ Analyze the images now:""",
                         self.active_requests.discard(result["request_id"])
                         self.response_queue.put(result)
                         self._update_response_history(result)
+
+                        # Send Discord alert for high threats
+                        if result["threat_level"] >= 70:
+                            self.send_discord_alert(result, current_image)
+
                     except Exception as e:
                         print(f"Error handling completion: {e}")
                         self.active_requests.discard(request_id)
@@ -394,6 +401,70 @@ Analyze the images now:""",
 
         return display_text
 
+    def set_discord_webhook(self, webhook_url: str) -> str:
+        """Set Discord webhook URL for notifications."""
+        try:
+            if not webhook_url.strip():
+                self.discord_webhook_url = None
+                return "Discord notifications disabled"
+
+            # Validate webhook URL format
+            if not webhook_url.startswith("https://discord.com/api/webhooks/"):
+                return "❌ Invalid Discord webhook URL format"
+
+            self.discord_webhook_url = webhook_url.strip()
+            return "✅ Discord webhook configured successfully"
+        except Exception as e:
+            return f"❌ Error setting Discord webhook: {e}"
+
+    def send_discord_alert(self, threat_result: Dict[str, Any], image: np.ndarray):
+        """Send high threat alert to Discord."""
+        try:
+            if not self.discord_webhook_url or threat_result["threat_level"] < 70:
+                return  # Only send high threat alerts
+
+            # Encode image for Discord
+            image_b64 = self.encode_image(image, "🚨 SECURITY ALERT")
+            if not image_b64:
+                return
+
+            # Prepare Discord message
+            timestamp = threat_result["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
+
+            embed = {
+                "title": "🚨 COMPUTER SECURITY ALERT",
+                "description": f"**Threat Level:** {threat_result['threat_level']}%\n**Status:** {threat_result['status']}\n**Time:** {timestamp}",
+                "color": 0xFF0000,  # Red color
+                "footer": {"text": "Computer Security Monitor"},
+                "timestamp": threat_result["timestamp"].isoformat(),
+            }
+
+            # Send to Discord
+            payload = {
+                "embeds": [embed],
+                "content": f"🚨 **HIGH SECURITY ALERT** - Threat Level: {threat_result['threat_level']}%",
+            }
+
+            # Convert image to bytes for file upload
+            import io
+
+            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            pil_image = Image.fromarray(image_rgb)
+            buffer = io.BytesIO()
+            pil_image.save(buffer, format="PNG")
+            buffer.seek(0)
+
+            files = {"file": ("security_alert.png", buffer, "image/png")}
+
+            response = requests.post(self.discord_webhook_url, json=payload, timeout=10)
+
+            # Send image separately if main message succeeded
+            if response.status_code == 204:
+                requests.post(self.discord_webhook_url, files=files, timeout=10)
+
+        except Exception as e:
+            print(f"Error sending Discord alert: {e}")
+
     def release_camera(self):
         """Release camera resources."""
         if self.camera:
@@ -408,6 +479,11 @@ monitor = SecurityMonitor()
 def initialize_api(api_key: str) -> str:
     """Initialize API client."""
     return monitor.initialize_client(api_key)
+
+
+def set_discord_webhook(webhook_url: str) -> str:
+    """Set Discord webhook URL."""
+    return monitor.set_discord_webhook(webhook_url)
 
 
 def set_owner_from_current_feed(
@@ -499,6 +575,24 @@ def create_gui():
                     info="Maximum parallel API requests (GLM-4V limit: 10)",
                 )
 
+                gr.Markdown("---")
+
+                # Discord notifications
+                gr.Markdown("## 🔔 Notification Settings")
+
+                discord_webhook_input = gr.Textbox(
+                    label="Discord Webhook URL",
+                    type="password",
+                    placeholder="https://discord.com/api/webhooks/...",
+                    info="High threat alerts (70%+) will be sent to Discord",
+                    interactive=True,
+                )
+
+                discord_setup_btn = gr.Button(
+                    "Setup Discord Notifications", variant="secondary"
+                )
+                discord_status = gr.Textbox(label="Discord Status", interactive=False)
+
             # Middle Column: Camera Feed and Owner Reference
             with gr.Column(scale=2):
                 gr.Markdown("## 📹 Live Camera Feed")
@@ -551,6 +645,12 @@ def create_gui():
 
         # Event handlers
         api_init_btn.click(initialize_api, inputs=[api_key_input], outputs=[api_status])
+
+        discord_setup_btn.click(
+            set_discord_webhook,
+            inputs=[discord_webhook_input],
+            outputs=[discord_status],
+        )
 
         capture_owner_btn.click(
             set_owner_from_current_feed,
