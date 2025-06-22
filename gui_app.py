@@ -203,7 +203,7 @@ SECURITY ALERT CONDITIONS:
 - Person's face closer to screen than reference distance
 - Arms extending toward computer area beyond reference positioning
 - Hands/arms appear larger/closer than what reference image shows
-- Any new object in the frame that is not in the reference image
+- Large difference between the reference image and the current image
 
 ⚠️ MODERATE THREAT (30-69%):
 - Person at SIMILAR distance as reference image (normal working range)
