@@ -75,23 +75,23 @@ class SecurityMonitor:
             print(f"Error encoding image: {e}")
             return None
 
-    def capture_owner_image(self) -> Tuple[Optional[np.ndarray], str]:
-        """Capture owner reference image from camera."""
+    def set_owner_from_stream(
+        self, current_frame: Optional[np.ndarray]
+    ) -> Tuple[Optional[np.ndarray], str]:
+        """Set owner reference image from current streaming frame."""
         try:
-            if self.camera is None:
-                self.camera = cv2.VideoCapture(0)
-                if not self.camera.isOpened():
-                    return None, "❌ Unable to access camera"
+            if current_frame is None:
+                return (
+                    None,
+                    "❌ No camera feed available. Please ensure webcam is active.",
+                )
 
-            ret, frame = self.camera.read()
-            if not ret:
-                return None, "❌ Failed to capture image from camera"
-
-            self.owner_image = frame.copy()
-            return frame, "✅ Owner image captured successfully"
+            # Store the current frame as owner reference
+            self.owner_image = current_frame.copy()
+            return current_frame, "✅ Owner reference image set from live camera feed"
 
         except Exception as e:
-            return None, f"❌ Error capturing owner image: {e}"
+            return None, f"❌ Error setting owner image: {str(e)}"
 
     def get_camera_frame(self) -> Optional[np.ndarray]:
         """Get current frame from camera."""
@@ -255,13 +255,9 @@ Analyze the images now:""",
         self.monitoring_active = True
         self.executor = ThreadPoolExecutor(max_workers=max_concurrent)
 
-        # Start monitoring thread
-        monitoring_thread = threading.Thread(
-            target=self._monitoring_loop,
-            args=(capture_interval, max_concurrent),
-            daemon=True,
-        )
-        monitoring_thread.start()
+        # Store monitoring parameters for streaming
+        self.capture_interval = capture_interval
+        self.max_concurrent = max_concurrent
 
         return f"✅ Security monitoring started (interval: {capture_interval}s, max concurrent: {max_concurrent})"
 
@@ -273,27 +269,33 @@ Analyze the images now:""",
             self.executor = None
         return "⏹️ Security monitoring stopped"
 
-    def _monitoring_loop(self, capture_interval: float, max_concurrent: int):
-        """Main monitoring loop running in separate thread."""
-        while self.monitoring_active:
-            try:
-                # Limit concurrent requests
-                if len(self.active_requests) >= max_concurrent:
-                    time.sleep(0.1)
-                    continue
+    def process_streaming_frame(
+        self, current_image: np.ndarray, capture_interval: float, max_concurrent: int
+    ) -> np.ndarray:
+        """Process streaming frame for security analysis."""
+        if not self.monitoring_active or current_image is None:
+            return current_image
 
-                # Capture current frame
-                current_frame = self.get_camera_frame()
-                if current_frame is None:
-                    time.sleep(capture_interval)
-                    continue
+        try:
+            # Limit concurrent requests
+            if len(self.active_requests) >= max_concurrent:
+                return current_image
 
-                # Submit analysis task
-                request_id = f"req_{int(time.time() * 1000)}"
-                self.active_requests.add(request_id)
+            # Check if enough time has passed since last analysis
+            current_time = time.time()
+            if hasattr(self, "_last_analysis_time"):
+                if current_time - self._last_analysis_time < capture_interval:
+                    return current_image
 
+            self._last_analysis_time = current_time
+
+            # Submit analysis task
+            request_id = f"req_{int(time.time() * 1000)}"
+            self.active_requests.add(request_id)
+
+            if self.executor:
                 future = self.executor.submit(
-                    self.analyze_security_threat, current_frame.copy(), request_id
+                    self.analyze_security_threat, current_image.copy(), request_id
                 )
 
                 # Handle completion in background
@@ -309,11 +311,11 @@ Analyze the images now:""",
 
                 future.add_done_callback(handle_completion)
 
-                time.sleep(capture_interval)
+            return current_image
 
-            except Exception as e:
-                print(f"Error in monitoring loop: {e}")
-                time.sleep(1)
+        except Exception as e:
+            print(f"Error processing streaming frame: {e}")
+            return current_image
 
     def _update_response_history(self, result: Dict[str, Any]):
         """Update response history with new result."""
@@ -357,10 +359,11 @@ def initialize_api(api_key: str) -> str:
     return monitor.initialize_client(api_key)
 
 
-def capture_owner() -> Tuple[Optional[np.ndarray], str]:
-    """Capture owner reference image."""
-    frame, message = monitor.capture_owner_image()
-    return frame, message
+def set_owner_from_current_feed(
+    current_frame: Optional[np.ndarray],
+) -> Tuple[Optional[np.ndarray], str]:
+    """Set owner reference image from current camera feed."""
+    return monitor.set_owner_from_stream(current_frame)
 
 
 def start_monitoring(capture_interval: float, max_concurrent: int) -> str:
@@ -407,6 +410,7 @@ def create_gui():
         )
 
         with gr.Row():
+            # Left Column: Configuration
             with gr.Column(scale=1):
                 gr.Markdown("## 🔧 Configuration")
 
@@ -420,18 +424,6 @@ def create_gui():
 
                 api_init_btn = gr.Button("Initialize API Client", variant="primary")
                 api_status = gr.Textbox(label="API Status", interactive=False)
-
-                gr.Markdown("---")
-
-                # Owner image capture
-                gr.Markdown("## 👤 Owner Reference")
-                capture_owner_btn = gr.Button(
-                    "📷 Capture Owner Image", variant="secondary"
-                )
-                owner_image_display = gr.Image(
-                    label="Owner Reference Image", height=200
-                )
-                owner_status = gr.Textbox(label="Capture Status", interactive=False)
 
                 gr.Markdown("---")
 
@@ -456,6 +448,48 @@ def create_gui():
                     info="Maximum parallel API requests (GLM-4V limit: 10)",
                 )
 
+            # Middle Column: Camera Feed and Owner Reference
+            with gr.Column(scale=2):
+                gr.Markdown("## 📹 Live Camera Feed")
+
+                camera_feed = gr.Image(
+                    label="Current Camera View",
+                    sources=["webcam"],
+                    type="numpy",
+                    streaming=True,
+                    height=300,
+                )
+
+                # Owner reference controls under camera feed
+                gr.Markdown("## 👤 Owner Reference")
+                capture_owner_btn = gr.Button(
+                    "📸 Set Latest Image as Owner Reference", variant="secondary"
+                )
+                owner_image_display = gr.Image(
+                    label="Owner Reference Image", height=200
+                )
+                owner_status = gr.Textbox(label="Reference Status", interactive=False)
+
+            # Right Column: Security Analysis Results
+            with gr.Column(scale=2):
+                gr.Markdown("## 📊 Security Analysis Results")
+
+                response_display = gr.Textbox(
+                    label="Latest 10 Results (Sorted by Request Time)",
+                    max_lines=25,
+                    lines=20,
+                    interactive=False,
+                    show_copy_button=True,
+                )
+
+                # Auto-refresh response display every 2 seconds
+                refresh_timer = gr.Timer(2.0)
+
+                gr.Markdown("---")
+
+                # Monitoring controls moved here for better workflow
+                gr.Markdown("## 🎯 Monitoring Controls")
+
                 with gr.Row():
                     start_btn = gr.Button("🚀 Start Monitoring", variant="primary")
                     stop_btn = gr.Button("⏹️ Stop Monitoring", variant="stop")
@@ -464,31 +498,13 @@ def create_gui():
                     label="Monitoring Status", interactive=False
                 )
 
-            with gr.Column(scale=2):
-                gr.Markdown("## 📹 Live Camera Feed")
-
-                camera_feed = gr.Image(
-                    label="Current Camera View", streaming=True, every=0.5, height=300
-                )
-
-                gr.Markdown("## 📊 Security Analysis Results")
-
-                response_display = gr.Textbox(
-                    label="Latest 10 Results (Sorted by Request Time)",
-                    max_lines=20,
-                    lines=15,
-                    interactive=False,
-                    show_copy_button=True,
-                )
-
-                # Auto-refresh response display every 2 seconds
-                refresh_timer = gr.Timer(2.0)
-
         # Event handlers
         api_init_btn.click(initialize_api, inputs=[api_key_input], outputs=[api_status])
 
         capture_owner_btn.click(
-            capture_owner, outputs=[owner_image_display, owner_status]
+            set_owner_from_current_feed,
+            inputs=[camera_feed],
+            outputs=[owner_image_display, owner_status],
         )
 
         start_btn.click(
@@ -499,9 +515,18 @@ def create_gui():
 
         stop_btn.click(stop_monitoring, outputs=[monitoring_status])
 
-        # Update camera feed
+        # Update camera feed using proper streaming
         camera_feed.stream(
-            get_camera_feed, inputs=None, outputs=[camera_feed], show_progress="hidden"
+            lambda frame: monitor.process_streaming_frame(
+                frame, capture_interval.value, max_concurrent.value
+            )
+            if frame is not None
+            else frame,
+            inputs=[camera_feed],
+            outputs=[camera_feed],
+            # time_limit=300,  # 5 minutes limit
+            stream_every=0.5,  # Update every 0.5 seconds
+            concurrency_limit=10,
         )
 
         # Auto-refresh response display
