@@ -155,41 +155,41 @@ class SecurityMonitor:
 
 Your task:
 1. FIRST - Check if the second image is mostly black, very dark, or shows camera malfunction/obstruction
-2. SECOND - OWNER IDENTIFICATION: Compare any person in the second image with the owner in the first image
-   - Check facial features, clothing, body build, hair, and overall appearance
-   - If you can confidently identify the person as the SAME OWNER = SAFE (go to LOW THREAT)
-3. THIRD - If NOT the owner OR uncertain about identity, then assess distance and behavior
+2. SECOND - DISTANCE ASSESSMENT: Use the first image as baseline for what "normal working distance" looks like
+3. THIRD - BEHAVIOR ANALYSIS: Assess proximity and suspicious actions based on distance comparison
 
 CRITICAL SECURITY EVALUATION ORDER:
 🔍 STEP 1 - CAMERA STATUS: Check for blackout/obstruction/malfunction
-🔍 STEP 2 - OWNER VERIFICATION: Is this definitely the same person as in reference image?
-   - Same face, similar clothing, matching physical characteristics
-   - If YES = SAFE regardless of position/arms (proceed to LOW THREAT)
-   - If NO or UNCERTAIN = proceed to threat assessment
-🔍 STEP 3 - THREAT ASSESSMENT: Only if NOT confirmed owner
-   - Distance comparison with reference image
-   - Arms/hands positioning and proximity
-   - Suspicious behavior detection
+🔍 STEP 2 - DISTANCE COMPARISON: Compare person's distance to computer with reference image
+   - Reference image shows "normal working distance"
+   - Closer than reference = HIGH THREAT
+   - Similar distance as reference = MODERATE THREAT  
+   - Further than reference = LOWER THREAT
+🔍 STEP 3 - PROXIMITY & BEHAVIOR ASSESSMENT:
+   - Arms/hands positioning relative to reference baseline
+   - Suspicious reaching or approaching behavior
+   - Face proximity to screen compared to reference
 
 SECURITY ALERT CONDITIONS:
 🚨 HIGH THREAT (70-100%):
 - Camera is blacked out/obstructed/malfunctioned
-- UNAUTHORIZED person (NOT the owner) at same or closer distance than reference
-- UNAUTHORIZED person with ANY visible arm/hand/fingers that appears close to camera
-- UNAUTHORIZED person reaching toward computer/keyboard/mouse/screen area
-- UNAUTHORIZED person's face much closer to screen than reference shows
-- UNAUTHORIZED person's arms extending toward computer area
-- UNAUTHORIZED person's hands/arms appear larger/closer than reference image
+- Person at CLOSER distance than reference image shows
+- ANY visible arm/hand/fingers that appears closer than reference baseline
+- Person reaching toward computer/keyboard/mouse/screen area
+- Person's face closer to screen than reference distance
+- Arms extending toward computer area beyond reference positioning
+- Hands/arms appear larger/closer than what reference image shows
 
 ⚠️ MODERATE THREAT (30-69%):
-- UNAUTHORIZED person present but at farther distance than reference
-- UNCERTAIN if same person as owner due to lighting/angle/partial view
-- Person approaching but not yet at reference distance (identity unclear)
+- Person at SIMILAR distance as reference image (normal working range)
+- Arms/hands visible at similar distance as reference baseline
+- Person approaching but not yet closer than reference distance
+- Unclear view but person appears to be within reference distance range
 
 ✅ LOW THREAT (0-29%):
-- CONFIRMED OWNER (same person as reference) - SAFE regardless of position/arms
 - No person visible but camera working normally
-- UNAUTHORIZED person at much farther distance than reference with no threatening behavior
+- Person at FURTHER distance than reference image with no threatening behavior
+- Person well beyond the reference working distance
 
 RESPONSE FORMAT:
 THREAT LEVEL: [0-100]%
