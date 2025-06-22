@@ -53,14 +53,38 @@ class SecurityMonitor:
         except Exception as e:
             return f"❌ Error initializing client: {e}"
 
-    def encode_image(self, image: np.ndarray) -> Optional[str]:
-        """Encode image to base64 string."""
+    def encode_image(self, image: np.ndarray, label_text: str = "") -> Optional[str]:
+        """Encode image to base64 string with optional text label."""
         try:
+            # Create a copy to avoid modifying the original
+            image_copy = image.copy()
+            
+            # Add text label if provided
+            if label_text:
+                # Add text overlay to image
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                font_scale = 1.0
+                color = (0, 255, 0)  # Green color in BGR
+                thickness = 2
+                
+                # Get text size to position it properly
+                text_size = cv2.getTextSize(label_text, font, font_scale, thickness)[0]
+                
+                # Position text at top-left with some padding
+                x = 10
+                y = 30
+                
+                # Add a background rectangle for better visibility
+                cv2.rectangle(image_copy, (x-5, y-25), (x + text_size[0] + 5, y + 5), (0, 0, 0), -1)
+                
+                # Add the text
+                cv2.putText(image_copy, label_text, (x, y), font, font_scale, color, thickness)
+
             # Convert BGR to RGB if needed
-            if len(image.shape) == 3 and image.shape[2] == 3:
-                image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            if len(image_copy.shape) == 3 and image_copy.shape[2] == 3:
+                image_rgb = cv2.cvtColor(image_copy, cv2.COLOR_BGR2RGB)
             else:
-                image_rgb = image
+                image_rgb = image_copy
 
             # Convert to PIL Image and then to bytes
             pil_image = Image.fromarray(image_rgb)
@@ -131,9 +155,9 @@ class SecurityMonitor:
                     "analysis": "Owner reference image not captured",
                 }
 
-            # Encode both images
-            owner_b64 = self.encode_image(self.owner_image)
-            current_b64 = self.encode_image(current_image)
+            # Encode both images with clear labels
+            owner_b64 = self.encode_image(self.owner_image, "REFERENCE IMAGE - NORMAL WORKING DISTANCE")
+            current_b64 = self.encode_image(current_image, "CURRENT MONITORING IMAGE")
 
             if not owner_b64 or not current_b64:
                 return {
@@ -148,10 +172,10 @@ class SecurityMonitor:
             message_content = [
                 {
                     "type": "text",
-                    "text": """You are a computer security monitoring system. I have uploaded 2 images:
+                    "text": """You are a computer security monitoring system. I have uploaded 2 images with clear labels:
 
-1. FIRST IMAGE: This is the authorized owner of the computer (reference image) - this shows the NORMAL, SAFE distance and position
-2. SECOND IMAGE: This is the current monitoring image from the camera
+1. FIRST IMAGE (labeled "REFERENCE IMAGE - NORMAL WORKING DISTANCE"): This shows the baseline for normal, safe computer use distance and positioning
+2. SECOND IMAGE (labeled "CURRENT MONITORING IMAGE"): This is the live camera feed to analyze for security threats
 
 Your task:
 1. FIRST - Check if the second image is mostly black, very dark, or shows camera malfunction/obstruction
@@ -179,6 +203,7 @@ SECURITY ALERT CONDITIONS:
 - Person's face closer to screen than reference distance
 - Arms extending toward computer area beyond reference positioning
 - Hands/arms appear larger/closer than what reference image shows
+- Any new object in the frame that is not in the reference image
 
 ⚠️ MODERATE THREAT (30-69%):
 - Person at SIMILAR distance as reference image (normal working range)
