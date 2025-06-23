@@ -1,0 +1,19 @@
+[project]
+name = "desk-guard-public"
+version = "0.1.0"
+description = "GLM-4V Image Upload Test"
+readme = "README.md"
+requires-python = ">=3.11, <3.12"
+dependencies = [
+    "zhipuai>=2.1.5",
+    "gradio>=4.0.0",
+    "opencv-python>=4.8.0",
+    "Pillow>=10.0.0",
+    "numpy>=1.24.0",
+]
+
+[tool.uv]
+no-cache = true
+prerelease = "allow"
+preview = true
+upgrade = true
