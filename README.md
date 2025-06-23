@@ -89,32 +89,23 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 2. **Clone and run the project:**
 ```bash
-# Install dependencies and run GUI
-uv run gui_app.py
-
-# Or run command-line version
+# Install dependencies and run the application
 uv run app.py
 ```
 
 3. **Alternative: Install dependencies first:**
 ```bash
 uv sync
-uv run gui_app.py
+uv run app.py
 ```
 
 ## 🚀 Usage
 
-### GUI Application (Recommended)
-```bash
-uv run gui_app.py
-```
-
-Then open your browser to: `http://127.0.0.1:7860`
-
-### Command Line Application  
 ```bash
 uv run app.py
 ```
+
+Then open your browser to: `http://127.0.0.1:7860`
 
 ## 🖥️ GUI Interface Guide
 
@@ -192,8 +183,7 @@ STATUS: 🚨 HIGH ALERT
 ### File Structure
 ```
 desk-guard-public/
-├── gui_app.py          # Main GUI application  
-├── app.py              # Command-line version
+├── app.py              # Main application with web GUI
 ├── pyproject.toml      # Project dependencies
 ├── README.md           # This documentation
 └── GUI_README.md       # Additional GUI-specific docs
