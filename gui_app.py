@@ -409,7 +409,9 @@ Analyze the images now:""",
                 return "Discord notifications disabled"
 
             # Validate webhook URL format
-            if not webhook_url.startswith("https://discord.com/api/webhooks/"):
+            if not webhook_url.startswith(
+                "https://discord.com/api/webhooks/"
+            ) and not webhook_url.startswith("https://ptb.discord.com/api/webhooks/"):
                 return "❌ Invalid Discord webhook URL format"
 
             self.discord_webhook_url = webhook_url.strip()
@@ -448,8 +450,9 @@ Analyze the images now:""",
             # Convert image to bytes for file upload
             import io
 
-            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            pil_image = Image.fromarray(image_rgb)
+            # The image is already in RGB format from the camera stream processing
+            # No need for color conversion as it was already done in get_camera_frame()
+            pil_image = Image.fromarray(image.astype("uint8"))
             buffer = io.BytesIO()
             pil_image.save(buffer, format="PNG")
             buffer.seek(0)
