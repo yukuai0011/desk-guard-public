@@ -425,11 +425,6 @@ Analyze the images now:""",
             if not self.discord_webhook_url or threat_result["threat_level"] < 70:
                 return  # Only send high threat alerts
 
-            # Encode image for Discord
-            image_b64 = self.encode_image(image, "🚨 SECURITY ALERT")
-            if not image_b64:
-                return
-
             # Prepare Discord message
             timestamp = threat_result["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
 
@@ -439,12 +434,9 @@ Analyze the images now:""",
                 "color": 0xFF0000,  # Red color
                 "footer": {"text": "Computer Security Monitor"},
                 "timestamp": threat_result["timestamp"].isoformat(),
-            }
-
-            # Send to Discord
-            payload = {
-                "embeds": [embed],
-                "content": f"🚨 **HIGH SECURITY ALERT** - Threat Level: {threat_result['threat_level']}%",
+                "image": {
+                    "url": "attachment://security_alert.png"
+                },  # Reference the attached image
             }
 
             # Convert image to bytes for file upload
@@ -457,13 +449,19 @@ Analyze the images now:""",
             pil_image.save(buffer, format="PNG")
             buffer.seek(0)
 
-            files = {"file": ("security_alert.png", buffer, "image/png")}
+            # Prepare payload and files for single combined request
+            payload = {
+                "embeds": [embed],
+                "content": f"🚨 **HIGH SECURITY ALERT** - Threat Level: {threat_result['threat_level']}%",
+            }
 
-            response = requests.post(self.discord_webhook_url, json=payload, timeout=10)
+            files = {
+                "file": ("security_alert.png", buffer, "image/png"),
+                "payload_json": (None, json.dumps(payload), "application/json"),
+            }
 
-            # Send image separately if main message succeeded
-            if response.status_code == 204:
-                requests.post(self.discord_webhook_url, files=files, timeout=10)
+            # Send message and image together in single request
+            response = requests.post(self.discord_webhook_url, files=files, timeout=10)
 
         except Exception as e:
             print(f"Error sending Discord alert: {e}")
