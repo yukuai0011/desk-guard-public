@@ -1,160 +1,250 @@
 # 🛡️ Computer Security Monitoring System
 
-This system uses GLM-4V vision AI to monitor computer access and detect unauthorized users approaching the computer.
+Real-time computer security monitoring system using GLM-4V vision AI with Gradio web interface. Features live camera monitoring, distance-based threat assessment, and Discord notifications.
+
+## ✨ Key Features
+
+- 🖥️ **Live Camera Monitoring**: Real-time webcam surveillance with streaming
+- 📏 **Distance-Based Assessment**: Uses reference image to determine normal vs suspicious proximity  
+- 🏷️ **Smart Image Labeling**: Automatically labels images for better AI understanding
+- 🔔 **Discord Integration**: High-threat alerts sent directly to Discord with images
+- ⚡ **Speed Optimized**: Fast threat assessment with minimal response time
+- 🌐 **Web GUI**: User-friendly Gradio interface accessible via browser
+- 🔍 **Camera Blackout Detection**: Alerts when camera is obstructed or malfunctioning
 
 ## 🔍 How It Works
 
-The system compares two images:
-1. **Owner Reference Image**: The authorized computer owner (first image)
-2. **Current User Image**: The person currently near the computer (second image)
+### Distance-Based Security Model
+The system establishes a security baseline using a reference image:
 
-The AI analyzes both facial features and clothing to determine if the current user is the authorized owner or an unauthorized person.
+1. **Reference Image**: Shows normal, safe computer use distance and positioning
+2. **Current Monitoring**: Live camera feed analyzed for security threats
+3. **Distance Comparison**: AI compares current distance to reference baseline
+4. **Threat Assessment**: Proximity and behavior determine threat level
 
-## 🚨 Security Alert Conditions
+### Smart Image Processing
+- **Automatic Labeling**: Images are labeled as "REFERENCE" and "CURRENT MONITORING"
+- **Color Correction**: Proper RGB handling for accurate Discord image sharing
+- **Real-time Processing**: Concurrent API requests for fast response
 
-The system triggers alerts when:
-- The current user is **NOT** the authorized owner (different face OR clothing)
-- **AND** they are approaching too closely by:
-  - Having their hand reaching toward the computer/keyboard/mouse
-  - Putting their face very close to the screen (closer than normal viewing distance)
+## 🚨 Enhanced Security Conditions
 
-## 📊 Threat Level Scoring (0-100%)
+### 🔴 HIGH THREAT (70-100%)
+- Camera blackout/obstruction/malfunction
+- Person **closer** than reference distance
+- Arms/hands **closer** than reference baseline  
+- Anyone reaching toward computer/keyboard/mouse
+- Face closer to screen than reference shows
+- Large difference between reference and current positioning
 
-The system provides a numerical threat assessment:
+### 🟡 MODERATE THREAT (30-69%)
+- Person at **similar distance** as reference (normal working range)
+- Unclear view but within reference distance range
+- Person approaching but not yet closer than reference distance
 
-- **🟢 0-29% (Normal)**: Owner present OR unauthorized person at safe distance
-- **🟡 30-69% (Caution)**: Unauthorized person present but not immediately threatening  
-- **🔴 70-100% (Alert)**: Unauthorized person approaching computer/reaching for it/face too close
+### 🟢 LOW THREAT (0-29%)
+- No person visible (camera working normally)
+- Person at **further distance** than reference with no threatening behavior
+- Person well beyond reference working distance
 
-## ✅ Response Categories
+## 🔔 Discord Integration
 
-**✅ ALL NORMAL (0-29%)**: Current user matches authorized owner OR no immediate threat
-**⚠️ CAUTION (30-69%)**: Unauthorized person detected but maintaining safe distance
-**🚨 SECURITY ALERT (70-100%)**: Unauthorized person approaching computer dangerously close
+### Setup Instructions
+1. Go to your Discord server
+2. Right-click the channel for alerts → "Edit Channel" → "Integrations"
+3. Click "Create Webhook" and copy the webhook URL
+4. Paste URL into the application's Discord settings
+5. High threats (70%+) automatically send alerts with images
+
+### Alert Format
+```
+🚨 HIGH SECURITY ALERT - Threat Level: 85%
+
+[Embedded Message]
+🚨 COMPUTER SECURITY ALERT
+Threat Level: 85%
+Status: 🚨 HIGH ALERT  
+Time: 2024-01-15 14:30:25
+
+[Attached Image: security_alert.png]
+```
 
 ## 📋 Prerequisites
 
-- Python 3.11+
-- GLM-4V API key from [https://open.bigmodel.cn/](https://open.bigmodel.cn/)
-- Two test images (owner reference and current user monitoring)
+- **Python 3.11+**
+- **GLM-4V API key** from [https://open.bigmodel.cn/](https://open.bigmodel.cn/)
+- **Webcam** for live monitoring
+- **Discord webhook URL** (optional, for notifications)
 
 ## 🔧 Installation
 
-1. Install dependencies:
+1. **Clone and install dependencies:**
 ```bash
-pip install zhipuai
+pip install zhipuai gradio opencv-python pillow numpy requests
 ```
 
-Or if you're using this project structure:
+Or using the project structure:
 ```bash
 pip install -e .
 ```
 
 ## 🚀 Usage
 
-1. Run the security monitoring system:
+### GUI Application (Recommended)
+```bash
+python gui_app.py
+```
+
+Then open your browser to: `http://127.0.0.1:7860`
+
+### Command Line Application  
 ```bash
 python app.py
 ```
 
-2. Enter your GLM-4V API key when prompted
+## 🖥️ GUI Interface Guide
 
-3. Choose monitoring mode:
-   - **Option 1**: 🔍 Security monitoring (compare owner vs current user)
-   - **Option 2**: 📷 Single image analysis  
-   - **Option 3**: ❌ Exit
+### 1. Configuration Panel
+- **GLM-4V API Key**: Enter your API key and click "Initialize API Client"
+- **Monitoring Settings**: 
+  - Capture Interval: Time between security checks (1-30 seconds)
+  - Max Concurrent Requests: Parallel API requests (1-10)
+- **Discord Notifications**:
+  - Enter webhook URL and click "Setup Discord Notifications"
 
-## 📸 Test Images
+### 2. Camera & Reference Setup
+- **Live Camera Feed**: View real-time webcam stream
+- **Owner Reference**: Click "📸 Set Latest Image as Owner Reference" to capture baseline
 
-The system is configured to use these test images:
-- **Owner (Reference)**: `C:\Users\yukua\Downloads\WIN_20250622_14_28_40_Pro.jpg`
-- **Current User (Monitoring)**: `C:\Users\yukua\Downloads\WIN_20250622_15_21_38_Pro.jpg`
+### 3. Security Monitoring
+- **Start/Stop Monitoring**: Control real-time threat detection
+- **Latest Results**: View recent security assessments with threat levels
 
-Make sure these files exist, or update the `image_paths` list in the code to point to your images.
+## ⚡ Performance Optimizations
 
-## 📚 API Documentation
+### Speed Enhancements
+- **Reduced Token Limit**: 100 tokens max for faster responses
+- **Lower Temperature**: 0.1 for deterministic, quick assessment  
+- **Simplified Output**: Just threat level and status (no detailed analysis)
+- **Concurrent Processing**: Multiple API requests in parallel
+- **Efficient Streaming**: 1-second intervals with smart caching
 
-This system uses the official zhipuai SDK:
-- [GLM-4V API Documentation](https://open.bigmodel.cn/dev/api/normal-model/glm-4v)
-- [Official Python SDK](https://github.com/MetaGLM/zhipuai-sdk-python-v4)
-
-## 📱 Example Output
-
-### High Threat Example (70-100%):
+### Example Fast Response
 ```
-🛡️  Computer Security Monitoring System
-=====================================
-Choose monitoring mode:
-1. 🔍 Security monitoring (compare owner vs current user)
-Enter your choice (1-3): 1
-
---- 🛡️  Security Monitoring Mode ---
-✓ GLM-4V client initialized successfully
-✓ Found image: WIN_20250622_14_28_40_Pro.jpg
-✓ Found image: WIN_20250622_15_21_38_Pro.jpg
-
-Processing 2 image(s) for security analysis...
-✓ Successfully encoded Owner (reference): WIN_20250622_14_28_40_Pro.jpg
-✓ Successfully encoded Current user (monitoring): WIN_20250622_15_21_38_Pro.jpg
-
-🔍 Analyzing 2 image(s) for security threats...
-✓ Security analysis completed
-
-============================================================
-🛡️  SECURITY MONITORING RESULT:
-============================================================
 THREAT LEVEL: 85%
-
-🚨 SECURITY ALERT: Unauthorized person detected approaching computer. 
-The person in the second image appears to be different from the owner 
-in the first image based on facial features and clothing. They are 
-reaching toward the keyboard, indicating potential unauthorized access.
-============================================================
+STATUS: 🚨 HIGH ALERT
 ```
 
-### Moderate Threat Example (30-69%):
+## 🎯 Monitoring Configuration
+
+### Recommended Settings
+- **Capture Interval**: 3 seconds (balance between speed and coverage)
+- **Max Concurrent**: 3 requests (within GLM-4V limits)
+- **Stream Update**: 1 second (responsive but not overwhelming)
+
+### GLM-4V API Limits
+- Maximum 10 concurrent requests
+- Recommended: 3-5 concurrent for stability
+
+## 📸 Camera Requirements
+
+- **Resolution**: Any webcam resolution supported by OpenCV
+- **Lighting**: Adequate lighting for clear facial/proximity detection
+- **Positioning**: Camera should capture computer area and approach paths
+- **Stability**: Stable mounting to avoid false motion alerts
+
+## 🔒 Security & Privacy
+
+### Data Handling
+- **Local Processing**: Images processed locally before API calls
+- **Secure API**: Only sent to official GLM-4V endpoints
+- **No Storage**: Images not permanently stored (only in memory)
+- **Webhook Security**: Discord URLs are password-protected in GUI
+
+### Network Requirements
+- **Internet Connection**: Required for GLM-4V API and Discord alerts  
+- **Firewall**: Ensure access to `open.bigmodel.cn` and Discord webhooks
+- **HTTPS**: All communications use secure HTTPS protocols
+
+## 🛠️ Technical Architecture
+
+### Components
+- **SecurityMonitor Class**: Core monitoring logic and threat assessment
+- **Gradio Interface**: Web-based GUI with real-time streaming
+- **Discord Integration**: Webhook-based alert system with image uploads
+- **Image Processing**: OpenCV + PIL for camera handling and encoding
+- **Concurrent Execution**: ThreadPoolExecutor for parallel API requests
+
+### File Structure
 ```
-============================================================
-🛡️  SECURITY MONITORING RESULT:
-============================================================
-THREAT LEVEL: 45%
-
-⚠️ CAUTION: Different person detected near the computer compared to 
-the authorized owner. However, they are maintaining a safe distance 
-and not directly interacting with the computer components.
-============================================================
+desk-guard-public/
+├── gui_app.py          # Main GUI application  
+├── app.py              # Command-line version
+├── pyproject.toml      # Project dependencies
+├── README.md           # This documentation
+└── GUI_README.md       # Additional GUI-specific docs
 ```
 
-### Normal Operation Example (0-29%):
-```
-============================================================
-🛡️  SECURITY MONITORING RESULT:
-============================================================
-THREAT LEVEL: 5%
+## 📊 Example Threat Scenarios
 
-✅ ALL NORMAL: The person in both images appears to be the same 
-individual (authorized owner) based on matching facial features 
-and similar clothing. No security threat detected.
-============================================================
-```
+### Scenario 1: Normal Use ✅
+- **Reference**: Person sitting at normal working distance
+- **Current**: Same positioning, typing normally
+- **Result**: `THREAT LEVEL: 5% - ✅ NORMAL`
 
-## ⚠️ Error Handling
+### Scenario 2: Approaching Threat ⚠️
+- **Reference**: Normal working distance
+- **Current**: Person closer but not yet at computer
+- **Result**: `THREAT LEVEL: 45% - ⚠️ CAUTION`
 
-The system includes comprehensive error handling for:
-- Missing API key
-- Image files not found
-- Image encoding failures
-- API connection errors
-- Security analysis failures
+### Scenario 3: High Alert 🚨
+- **Reference**: Normal working distance  
+- **Current**: Person much closer, reaching toward keyboard
+- **Result**: `THREAT LEVEL: 85% - 🚨 HIGH ALERT`
+- **Action**: Discord alert sent automatically
 
-## 🔒 Security Features
+### Scenario 4: Camera Issue 🚨
+- **Reference**: Clear camera view
+- **Current**: Black/obstructed camera
+- **Result**: `THREAT LEVEL: 100% - 🚨 HIGH ALERT`
+- **Reason**: Camera malfunction/obstruction detected
 
-- **Dual Authentication**: Compares both facial features AND clothing
-- **Proximity Detection**: Identifies when someone is too close to the computer
-- **Gesture Analysis**: Detects hands reaching toward computer components
-- **Real-time Monitoring**: Provides immediate security alerts
-- **Privacy Focused**: Processes images locally and only sends to secure GLM-4V API
+## ⚠️ Troubleshooting
+
+### Common Issues
+
+**🔸 "API client not initialized"**
+- Solution: Enter valid GLM-4V API key and click "Initialize API Client"
+
+**🔸 "Owner reference image not captured"**  
+- Solution: Ensure camera is working, then click "📸 Set Latest Image as Owner Reference"
+
+**🔸 Discord alerts not working**
+- Check webhook URL format (must start with `https://discord.com/api/webhooks/` or `https://ptb.discord.com/api/webhooks/`)
+- Verify webhook is active in Discord channel settings
+
+**🔸 Camera feed not showing**
+- Check webcam permissions and ensure no other applications are using camera
+- Try restarting the application
+
+**🔸 Colors inverted in Discord images**
+- This has been fixed in the latest version - ensure you're using the updated code
+
+### Performance Issues
+- **Slow responses**: Reduce concurrent requests or increase capture interval
+- **High CPU usage**: Increase capture interval from 1-3 seconds to 5-10 seconds
+- **API rate limits**: Ensure concurrent requests ≤ 10 (GLM-4V limit)
+
+## 📚 API References
+
+- **GLM-4V Documentation**: [https://open.bigmodel.cn/dev/api/normal-model/glm-4v](https://open.bigmodel.cn/dev/api/normal-model/glm-4v)
+- **Discord Webhooks**: [https://discord.com/developers/docs/resources/webhook](https://discord.com/developers/docs/resources/webhook)
+- **Gradio Documentation**: [https://gradio.app/docs](https://gradio.app/docs)
+
+## 🤝 Contributing
+
+Feel free to submit issues, feature requests, or pull requests to improve the system.
 
 ## 📄 License
 
-This project uses the MIT license, same as the zhipuai SDK.
+Apache 2.0 License - See LICENSE file for details.
