@@ -185,8 +185,7 @@ STATUS: 🚨 HIGH ALERT
 desk-guard-public/
 ├── app.py              # Main application with web GUI
 ├── pyproject.toml      # Project dependencies
-├── README.md           # This documentation
-└── GUI_README.md       # Additional GUI-specific docs
+└── README.md           # This documentation
 ```
 
 ## 📊 Example Threat Scenarios
