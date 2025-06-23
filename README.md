@@ -78,28 +78,42 @@ Time: 2024-01-15 14:30:25
 
 ## 🔧 Installation
 
-1. **Clone and install dependencies:**
+1. **Install uv:**
 ```bash
-pip install zhipuai gradio opencv-python pillow numpy requests
+# On macOS and Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# On Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Or using the project structure:
+2. **Clone and run the project:**
 ```bash
-pip install -e .
+# Install dependencies and run GUI
+uv run gui_app.py
+
+# Or run command-line version
+uv run app.py
+```
+
+3. **Alternative: Install dependencies first:**
+```bash
+uv sync
+uv run gui_app.py
 ```
 
 ## 🚀 Usage
 
 ### GUI Application (Recommended)
 ```bash
-python gui_app.py
+uv run gui_app.py
 ```
 
 Then open your browser to: `http://127.0.0.1:7860`
 
 ### Command Line Application  
 ```bash
-python app.py
+uv run app.py
 ```
 
 ## 🖥️ GUI Interface Guide
