@@ -23,12 +23,12 @@ RUN apt-get update && apt-get install -y \
 
 # Copy project files
 COPY pyproject.toml ./
-COPY app.py ./
-COPY README.md ./
-COPY LICENSE ./
 
 # Sync dependencies using uv
 RUN uv sync
+
+# Copy the rest of the project files
+COPY app.py ./
 
 # Expose the port that Gradio uses
 EXPOSE 7860
