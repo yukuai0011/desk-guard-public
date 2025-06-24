@@ -216,6 +216,7 @@ SECURITY ALERT CONDITIONS:
 - Arms extending toward computer area beyond reference positioning
 - Hands/arms appear larger/closer than what reference image shows
 - Large difference between the reference image and the current image
+- Or anything suspicious
 
 ⚠️ MODERATE THREAT (30-69%):
 - Person at SIMILAR distance as reference image (normal working range)
