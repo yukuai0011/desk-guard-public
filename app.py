@@ -210,18 +210,17 @@ SECURITY ALERT CONDITIONS:
 🚨 HIGH THREAT (70-100%):
 - Camera is blacked out/obstructed/malfunctioned
 - Person at CLOSER distance than reference image shows
-- ANY visible arm/hand/fingers that appears closer than reference baseline
+- Person at SIMILAR distance as reference image (normal working range)
+- ANY visible arm/hand/fingers that appears closer than or similar to reference baseline
 - Person reaching toward computer/keyboard/mouse/screen area
-- Person's face closer to screen than reference distance
-- Arms extending toward computer area beyond reference positioning
-- Hands/arms appear larger/closer than what reference image shows
+- Person's face closer to or at similar distance to screen as reference distance
+- Arms extending toward computer area beyond or at reference positioning
+- Hands/arms appear larger/closer than or similar size to what reference image shows
 - Large difference between the reference image and the current image
 
 ⚠️ MODERATE THREAT (30-69%):
-- Person at SIMILAR distance as reference image (normal working range)
-- Arms/hands visible at similar distance as reference baseline
-- Person approaching but not yet closer than reference distance
-- Unclear view but person appears to be within reference distance range
+- Person approaching but not yet at reference distance
+- Unclear view but person appears to be approaching reference distance range
 
 ✅ LOW THREAT (0-29%):
 - No person visible but camera working normally
