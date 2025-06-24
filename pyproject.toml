@@ -16,4 +16,3 @@ dependencies = [
 no-cache = true
 prerelease = "allow"
 preview = true
-upgrade = true
