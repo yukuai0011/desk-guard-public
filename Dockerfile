@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
 
 # Copy project files
 COPY pyproject.toml ./
+COPY uv.lock ./
 
 # Sync dependencies using uv
 RUN uv sync
