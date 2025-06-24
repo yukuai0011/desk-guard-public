@@ -189,28 +189,13 @@ class SecurityMonitor:
 1. FIRST IMAGE (labeled "REFERENCE IMAGE - NORMAL WORKING DISTANCE"): This shows the baseline for normal, safe computer use distance and positioning
 2. SECOND IMAGE (labeled "CURRENT MONITORING IMAGE"): This is the live camera feed to analyze for security threats
 
-Your task:
-1. FIRST - Check if the second image is mostly black, very dark, or shows camera malfunction/obstruction
-2. SECOND - DISTANCE ASSESSMENT: Use the first image as baseline for what "normal working distance" looks like
-3. THIRD - BEHAVIOR ANALYSIS: Assess proximity and suspicious actions based on distance comparison
-
-CRITICAL SECURITY EVALUATION ORDER:
-🔍 STEP 1 - CAMERA STATUS: Check for blackout/obstruction/malfunction
-🔍 STEP 2 - DISTANCE COMPARISON: Compare person's distance to computer with reference image
-   - Reference image shows "normal working distance"
-   - Closer than reference = HIGH THREAT
-   - Similar distance as reference = MODERATE THREAT  
-   - Further than reference = LOWER THREAT
-🔍 STEP 3 - PROXIMITY & BEHAVIOR ASSESSMENT:
-   - Arms/hands positioning relative to reference baseline
-   - Suspicious reaching or approaching behavior
-   - Face proximity to screen compared to reference
-
 SECURITY ALERT CONDITIONS:
+(Satisfy any of the following conditions to trigger a security alert,
+evaluate by the order of highest to lowest threat level)
+
 🚨 HIGH THREAT (70-100%):
 - Camera is blacked out/obstructed/malfunctioned
-- Person at CLOSER distance than reference image shows
-- Person at SIMILAR distance as reference image (normal working range)
+- Person at within range of the referenced working distance + 0.5m
 - ANY visible arm/hand/fingers that appears closer than or similar to reference baseline
 - Person reaching toward computer/keyboard/mouse/screen area
 - Person's face closer to or at similar distance to screen as reference distance
