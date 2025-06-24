@@ -195,7 +195,7 @@ evaluate by the order of highest to lowest threat level)
 
 🚨 HIGH THREAT (70-100%):
 - Camera is blacked out/obstructed/malfunctioned
-- Person at within range of the referenced working distance + 0.5m
+- Person at a distance closer than or similar to the referenced working distance, or up to 0.5m beyond it
 - ANY visible arm/hand/fingers that appears closer than or similar to reference baseline
 - Person reaching toward computer/keyboard/mouse/screen area
 - Person's face closer to or at similar distance to screen as reference distance
