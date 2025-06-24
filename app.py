@@ -184,46 +184,17 @@ class SecurityMonitor:
             message_content = [
                 {
                     "type": "text",
-                    "text": """You are a computer security monitoring system. I have uploaded 2 images with clear labels:
+                    "text": """You are a computer security monitoring system. Analyze the current monitoring image to detect if any person is visible in the frame.
 
-1. FIRST IMAGE (labeled "REFERENCE IMAGE - NORMAL WORKING DISTANCE"): This shows the baseline for normal, safe computer use distance and positioning
-2. SECOND IMAGE (labeled "CURRENT MONITORING IMAGE"): This is the live camera feed to analyze for security threats
-
-SECURITY ALERT CONDITIONS:
-(Satisfy any of the following conditions to trigger a security alert,
-evaluate by the order of highest to lowest threat level)
-
-🚨 HIGH THREAT (70-100%):
-- Camera is blacked out/obstructed/malfunctioned
-- Person at a distance closer than or similar to the referenced working distance, or up to 0.5m beyond it
-- ANY visible arm/hand/fingers that appears closer than or similar to reference baseline
-- Person reaching toward computer/keyboard/mouse/screen area
-- Person's face closer to or at similar distance to screen as reference distance
-- Arms extending toward computer area beyond or at reference positioning
-- Hands/arms appear larger/closer than or similar size to what reference image shows
-- Large difference between the reference image and the current image
-- Any suspicious behavior
-
-⚠️ MODERATE THREAT (30-69%):
-- Person approaching but not yet at reference distance
-- Unclear view but person appears to be approaching reference distance range
-
-✅ LOW THREAT (0-29%):
-- No person visible but camera working normally
-- Person at FURTHER distance than reference image with no threatening behavior
-- Person well beyond the reference working distance
+SIMPLE DETECTION RULE:
+🚨 HIGH THREAT (80%): Any person is visible in the image (full person, face, body parts, etc.)
+✅ LOW THREAT (0%): No person visible in the image
 
 RESPONSE FORMAT (KEEP IT BRIEF):
-THREAT LEVEL: [0-100]%
-STATUS: [Choose one: "🚨 HIGH ALERT" / "⚠️ CAUTION" / "✅ NORMAL"]
+THREAT LEVEL: [0 or 80]%
+STATUS: [Choose one: "🚨 HIGH ALERT" / "✅ NORMAL"]
 
-IMPORTANT: Just provide the threat level number and status. No detailed analysis needed.
-
-Analyze the images now:""",
-                },
-                {
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{owner_b64}"},
+Just detect if a person is present - provide only the threat level and status.""",
                 },
                 {
                     "type": "image_url",
