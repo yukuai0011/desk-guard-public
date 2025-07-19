@@ -2,16 +2,15 @@
 """
 🛡️ Computer Security Monitoring GUI
 
-Real-time security monitoring system using GLM-4V vision AI with Gradio interface.
+Real-time security monitoring system using GLM-4.1V-Thinking-Flash vision AI with Gradio interface.
 Features camera integration, concurrent API processing, and live threat assessment.
 """
 
 import base64
 import json
 import queue
-import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -45,13 +44,13 @@ class SecurityMonitor:
         self.discord_webhook_url: Optional[str] = None
 
     def initialize_client(self, api_key: str) -> str:
-        """Initialize the GLM-4V client with API key."""
+        """Initialize the GLM-4.1V-Thinking-Flash client with API key."""
         try:
             if not api_key.strip():
                 return "❌ Please enter a valid API key"
 
             self.client = ZhipuAI(api_key=api_key.strip())
-            return "✅ GLM-4V client initialized successfully"
+            return "✅ GLM-4.1V-Thinking-Flash client initialized successfully"
         except Exception as e:
             return f"❌ Error initializing client: {e}"
 
@@ -145,7 +144,7 @@ class SecurityMonitor:
     def analyze_security_threat(
         self, current_image: np.ndarray, request_id: str
     ) -> Dict[str, Any]:
-        """Analyze security threat using GLM-4V API."""
+        """Analyze security threat using GLM-4.1V-Thinking-Flash API."""
         try:
             if self.client is None:
                 return {
@@ -233,14 +232,15 @@ Analyze the images now:""",
 
             # Make API call
             response = self.client.chat.completions.create(
-                model="glm-4v-flash",
+                model="glm-4.1v-thinking-flash",
                 messages=[{"role": "user", "content": message_content}],
-                extra_body={"temperature": 0.1, "max_tokens": 100},
+                extra_body={"temperature": 0.1, "max_tokens": 300},
             )
 
-            # Parse response
+            # Parse response and handle <think> tags
             response_text = response.choices[0].message.content
-            threat_level = self.extract_threat_level(response_text)
+            processed_response = self.process_thinking_response(response_text)
+            threat_level = self.extract_threat_level(processed_response)
             status_emoji = self.get_status_emoji(threat_level)
 
             return {
@@ -248,7 +248,7 @@ Analyze the images now:""",
                 "timestamp": datetime.now(),
                 "threat_level": threat_level,
                 "status": status_emoji,
-                "analysis": response_text,
+                "analysis": processed_response,
             }
 
         except Exception as e:
@@ -260,6 +260,22 @@ Analyze the images now:""",
                 "analysis": f"Error during security analysis: {e}",
             }
 
+    def process_thinking_response(self, response_text: str) -> str:
+        """Remove <think> tags from the GLM-4.1V-Thinking-Flash response."""
+        try:
+            import re
+            
+            # Remove <think>...</think> content including multiline
+            processed_text = re.sub(r'<think>.*?</think>', '', response_text, flags=re.DOTALL)
+            
+            # Clean up any extra whitespace or newlines
+            processed_text = re.sub(r'\n\s*\n', '\n', processed_text).strip()
+            
+            return processed_text
+        except Exception as e:
+            print(f"Error processing thinking response: {e}")
+            return response_text  # Return original if processing fails
+
     def extract_threat_level(self, response_text: str) -> int:
         """Extract threat level percentage from response text."""
         try:
@@ -267,7 +283,7 @@ Analyze the images now:""",
 
             match = re.search(r"THREAT LEVEL:\s*(\d+)%", response_text)
             return int(match.group(1)) if match else 0
-        except:
+        except Exception:
             return 0
 
     def get_status_emoji(self, threat_level: int) -> str:
@@ -446,7 +462,7 @@ Analyze the images now:""",
             }
 
             # Send message and image together in single request
-            response = requests.post(self.discord_webhook_url, files=files, timeout=10)
+            requests.post(self.discord_webhook_url, files=files, timeout=10)
 
         except Exception as e:
             print(f"Error sending Discord alert: {e}")
@@ -519,7 +535,7 @@ def create_gui():
     ) as interface:
         gr.Markdown("# 🛡️ Computer Security Monitoring System")
         gr.Markdown(
-            "Real-time security monitoring using GLM-4V vision AI with camera integration"
+            "Real-time security monitoring using GLM-4.1V-Thinking-Flash vision AI with camera integration"
         )
 
         with gr.Row():
@@ -529,7 +545,7 @@ def create_gui():
 
                 # API Key input
                 api_key_input = gr.Textbox(
-                    label="GLM-4V API Key",
+                    label="GLM-4.1V-Thinking-Flash API Key",
                     type="password",
                     placeholder="Enter your API key from open.bigmodel.cn",
                     interactive=True,
@@ -558,7 +574,7 @@ def create_gui():
                     value=3,
                     step=1,
                     label="Max Concurrent Requests",
-                    info="Maximum parallel API requests (GLM-4V limit: 10)",
+                    info="Maximum parallel API requests (GLM-4.1V-Thinking-Flash limit: 10)",
                 )
 
                 gr.Markdown("---")
@@ -661,7 +677,6 @@ def create_gui():
             else frame,
             inputs=[camera_feed],
             outputs=[camera_feed],
-            # time_limit=60,  # 1 minute limit
             stream_every=1,  # Update every 1 second
             concurrency_limit=10,
         )
@@ -677,7 +692,7 @@ def main():
     print("🛡️ Starting Computer Security Monitoring GUI...")
     print("📋 Features:")
     print("   • Real-time camera monitoring")
-    print("   • GLM-4V AI threat analysis")
+    print("   • GLM-4.1V-Thinking-Flash AI threat analysis")
     print("   • Concurrent API processing")
     print("   • Live threat level assessment")
     print()

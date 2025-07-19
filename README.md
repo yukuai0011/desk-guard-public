@@ -1,6 +1,6 @@
 # 🛡️ Computer Security Monitoring System
 
-Real-time computer security monitoring system using GLM-4V vision AI with Gradio web interface. Features live camera monitoring, distance-based threat assessment, and Discord notifications.
+Real-time computer security monitoring system using GLM-4.1V-Thinking-Flash vision AI with Gradio web interface. Features live camera monitoring, distance-based threat assessment, and Discord notifications.
 
 ## ✨ Key Features
 
@@ -72,7 +72,7 @@ Time: 2024-01-15 14:30:25
 ## 📋 Prerequisites
 
 - **Python 3.11+**
-- **GLM-4V API key** from [https://open.bigmodel.cn/](https://open.bigmodel.cn/)
+- **GLM-4.1V-Thinking-Flash API key** from [https://open.bigmodel.cn/](https://open.bigmodel.cn/)
 - **Webcam** for live monitoring
 - **Discord webhook URL** (optional, for notifications)
 
@@ -110,7 +110,7 @@ Then open your browser to: `http://127.0.0.1:7860`
 ## 🖥️ GUI Interface Guide
 
 ### 1. Configuration Panel
-- **GLM-4V API Key**: Enter your API key and click "Initialize API Client"
+- **GLM-4.1V-Thinking-Flash API Key**: Enter your API key and click "Initialize API Client"
 - **Monitoring Settings**: 
   - Capture Interval: Time between security checks (1-30 seconds)
   - Max Concurrent Requests: Parallel API requests (1-10)
@@ -144,10 +144,10 @@ STATUS: 🚨 HIGH ALERT
 
 ### Recommended Settings
 - **Capture Interval**: 3 seconds (balance between speed and coverage)
-- **Max Concurrent**: 3 requests (within GLM-4V limits)
+- **Max Concurrent**: 3 requests (within GLM-4.1V-Thinking-Flash limits)
 - **Stream Update**: 1 second (responsive but not overwhelming)
 
-### GLM-4V API Limits
+### GLM-4.1V-Thinking-Flash API Limits
 - Maximum 10 concurrent requests
 - Recommended: 3-5 concurrent for stability
 
@@ -162,12 +162,12 @@ STATUS: 🚨 HIGH ALERT
 
 ### Data Handling
 - **Local Processing**: Images processed locally before API calls
-- **Secure API**: Only sent to official GLM-4V endpoints
+- **Secure API**: Only sent to official GLM-4.1V-Thinking-Flash endpoints
 - **No Storage**: Images not permanently stored (only in memory)
 - **Webhook Security**: Discord URLs are password-protected in GUI
 
 ### Network Requirements
-- **Internet Connection**: Required for GLM-4V API and Discord alerts  
+- **Internet Connection**: Required for GLM-4.1V-Thinking-Flash API and Discord alerts  
 - **Firewall**: Ensure access to `open.bigmodel.cn` and Discord webhooks
 - **HTTPS**: All communications use secure HTTPS protocols
 
@@ -217,7 +217,7 @@ desk-guard-public/
 ### Common Issues
 
 **🔸 "API client not initialized"**
-- Solution: Enter valid GLM-4V API key and click "Initialize API Client"
+- Solution: Enter valid GLM-4.1V-Thinking-Flash API key and click "Initialize API Client"
 
 **🔸 "Owner reference image not captured"**  
 - Solution: Ensure camera is working, then click "📸 Set Latest Image as Owner Reference"
@@ -236,11 +236,11 @@ desk-guard-public/
 ### Performance Issues
 - **Slow responses**: Reduce concurrent requests or increase capture interval
 - **High CPU usage**: Increase capture interval from 1-3 seconds to 5-10 seconds
-- **API rate limits**: Ensure concurrent requests ≤ 10 (GLM-4V limit)
+- **API rate limits**: Ensure concurrent requests ≤ 10 (GLM-4.1V-Thinking-Flash limit)
 
 ## 📚 API References
 
-- **GLM-4V Documentation**: [https://open.bigmodel.cn/dev/api/normal-model/glm-4v](https://open.bigmodel.cn/dev/api/normal-model/glm-4v)
+- **GLM-4.1V-Thinking-Flash Documentation**: [https://open.bigmodel.cn/dev/api/normal-model/glm-4v](https://open.bigmodel.cn/dev/api/normal-model/glm-4v)
 - **Discord Webhooks**: [https://discord.com/developers/docs/resources/webhook](https://discord.com/developers/docs/resources/webhook)
 - **Gradio Documentation**: [https://gradio.app/docs](https://gradio.app/docs)
 

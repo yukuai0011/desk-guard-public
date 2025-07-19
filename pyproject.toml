@@ -1,7 +1,7 @@
 [project]
 name = "desk-guard-public"
 version = "0.1.0"
-description = "GLM-4V Image Upload Test"
+description = "GLM-4.1V-Thinking-Flash Computer Security Monitor"
 readme = "README.md"
 requires-python = ">=3.11, <3.12"
 dependencies = [
