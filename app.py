@@ -233,13 +233,14 @@ Analyze the images now:""",
 
             # Make API call
             response = self.client.chat.completions.create(
-                model="glm-4v-flash",
+                model="glm-4.1v-thinking-flash",
                 messages=[{"role": "user", "content": message_content}],
                 extra_body={"temperature": 0.1, "max_tokens": 100},
             )
 
             # Parse response
             response_text = response.choices[0].message.content
+            processed_response = self.process_thinking_response(response_text)
             threat_level = self.extract_threat_level(response_text)
             status_emoji = self.get_status_emoji(threat_level)
 
@@ -248,7 +249,7 @@ Analyze the images now:""",
                 "timestamp": datetime.now(),
                 "threat_level": threat_level,
                 "status": status_emoji,
-                "analysis": response_text,
+                "analysis": processed_response,  # Use processed response without thinking tags
             }
 
         except Exception as e:
@@ -260,12 +261,45 @@ Analyze the images now:""",
                 "analysis": f"Error during security analysis: {e}",
             }
 
+    def process_thinking_response(self, response_text: str) -> str:
+        """Process GLM-4.1V-Thinking-Flash response to extract actual content from <think> tags."""
+        try:
+            import re
+            
+            # The thinking model wraps reasoning in <think>...</think> tags
+            # We want to extract the content after the thinking tags
+            
+            # First, try to find content after </think> tag
+            think_end_match = re.search(r'</think>\s*(.*)', response_text, re.DOTALL)
+            if think_end_match:
+                actual_response = think_end_match.group(1).strip()
+                if actual_response:
+                    return actual_response
+            
+            # If no </think> tag found, check if there are <think> tags and extract content after them
+            think_pattern = r'<think>.*?</think>\s*(.*)'
+            match = re.search(think_pattern, response_text, re.DOTALL)
+            if match:
+                actual_response = match.group(1).strip()
+                if actual_response:
+                    return actual_response
+            
+            # If no thinking tags found, return the original response
+            return response_text.strip()
+            
+        except Exception as e:
+            print(f"Error processing thinking response: {e}")
+            return response_text
+
     def extract_threat_level(self, response_text: str) -> int:
         """Extract threat level percentage from response text."""
         try:
             import re
+            
+            # First process the thinking response to get actual content
+            processed_text = self.process_thinking_response(response_text)
 
-            match = re.search(r"THREAT LEVEL:\s*(\d+)%", response_text)
+            match = re.search(r"THREAT LEVEL:\s*(\d+)%", processed_text)
             return int(match.group(1)) if match else 0
         except:
             return 0
