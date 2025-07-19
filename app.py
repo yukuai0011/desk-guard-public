@@ -233,14 +233,15 @@ Analyze the images now:""",
 
             # Make API call
             response = self.client.chat.completions.create(
-                model="glm-4v-flash",
+                model="GLM-4.1V-Thinking-Flash",
                 messages=[{"role": "user", "content": message_content}],
-                extra_body={"temperature": 0.1, "max_tokens": 100},
+                extra_body={"temperature": 0.1, "max_tokens": 500},  # Increased tokens for thinking
             )
 
-            # Parse response
+            # Parse response and handle <think> tags
             response_text = response.choices[0].message.content
-            threat_level = self.extract_threat_level(response_text)
+            actual_response = self.extract_response_from_thinking(response_text)
+            threat_level = self.extract_threat_level(actual_response)
             status_emoji = self.get_status_emoji(threat_level)
 
             return {
@@ -248,7 +249,8 @@ Analyze the images now:""",
                 "timestamp": datetime.now(),
                 "threat_level": threat_level,
                 "status": status_emoji,
-                "analysis": response_text,
+                "analysis": actual_response,
+                "full_response": response_text,  # Store full response including thinking for debugging
             }
 
         except Exception as e:
@@ -260,9 +262,33 @@ Analyze the images now:""",
                 "analysis": f"Error during security analysis: {e}",
             }
 
+    def extract_response_from_thinking(self, response_text: str) -> str:
+        """Extract actual response from text that may contain <think> tags."""
+        try:
+            if response_text is None:
+                return ""
+            
+            # Check if response contains think tags
+            if "<think>" in response_text and "</think>" in response_text:
+                # Split by </think> and take the content after it
+                parts = response_text.split("</think>")
+                if len(parts) > 1:
+                    # Return everything after the last </think> tag, stripped of whitespace
+                    actual_response = parts[-1].strip()
+                    return actual_response if actual_response else response_text
+            
+            # If no think tags, return the original response
+            return response_text
+        except Exception as e:
+            print(f"Error extracting response from thinking: {e}")
+            return response_text if response_text else ""
+
     def extract_threat_level(self, response_text: str) -> int:
         """Extract threat level percentage from response text."""
         try:
+            if not response_text:
+                return 0
+                
             import re
 
             match = re.search(r"THREAT LEVEL:\s*(\d+)%", response_text)
