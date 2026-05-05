@@ -250,4 +250,4 @@ Feel free to submit issues, feature requests, or pull requests to improve the sy
 
 ## 📄 License
 
-Apache 2.0 License - See LICENSE file for details.
+Mozilla Public License Version 2.0 - See LICENSE file for details.
